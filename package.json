@@ -36,5 +36,10 @@
     "type": "git",
     "url": "https://github.com/stratiformdigital/sechub-github-sync"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.1177.0",
+    "lodash": "^4.17.21",
+    "octokit": "^2.0.4"
+  }
 }
