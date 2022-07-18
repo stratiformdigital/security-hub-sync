@@ -230,4 +230,4 @@ async function sync(event) {
   await createOrUpdateIssuesBasedOnFindings(findings, issues);
 }
 
-module.exports.main = sync;
+module.exports.sync = sync;
