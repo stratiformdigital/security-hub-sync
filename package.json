@@ -41,5 +41,8 @@
     "aws-sdk": "^2.1177.0",
     "lodash": "^4.17.21",
     "octokit": "^2.0.4"
+  },
+  "devDependencies": {
+    "semantic-release": "^19.0.3"
   }
 }
