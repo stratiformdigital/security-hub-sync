@@ -1,6 +1,7 @@
 {
-  "name": "@stratiformdigital/npm-accelerator",
+  "name": "@stratiformdigital/sechub-github-sync",
   "version": "1.0.0",
+  "private": true,
   "description": "A really awesome description of this package.",
   "main": "index.js",
   "scripts": {
@@ -33,7 +34,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/stratiformdigital/npm-accelerator"
+    "url": "https://github.com/stratiformdigital/sechub-github-sync"
   },
   "license": "MIT"
 }

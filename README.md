@@ -1,13 +1,13 @@
-<h1 align="center" style="border-bottom: none;">npm-accelerator</h1>
+<h1 align="center" style="border-bottom: none;">sechub-github-sync</h1>
 <h3 align="center">A really awesome description of this package.</h3>
 <p align="center">
-  <a href="https://github.com/stratiformdigital/npm-accelerator/releases/latest">
-    <img alt="latest release" src="https://img.shields.io/github/release/stratiformdigital/npm-accelerator.svg">
+  <a href="https://github.com/stratiformdigital/sechub-github-sync/releases/latest">
+    <img alt="latest release" src="https://img.shields.io/github/release/stratiformdigital/sechub-github-sync.svg">
   </a>
-  <a href="https://www.npmjs.com/package/@stratiformdigital/npm-accelerator">
-    <img alt="npm latest version" src="https://img.shields.io/npm/v/@stratiformdigital/npm-accelerator/latest.svg">
+  <a href="https://www.npmjs.com/package/@stratiformdigital/sechub-github-sync">
+    <img alt="npm latest version" src="https://img.shields.io/npm/v/@stratiformdigital/sechub-github-sync/latest.svg">
   </a>
-  <a href="https://codeclimate.com/github/stratiformdigital/npm-accelerator/maintainability">
+  <a href="https://codeclimate.com/github/stratiformdigital/sechub-github-sync/maintainability">
     <img alt="Maintainability" src="https://api.codeclimate.com/v1/badges/ed37d65c137b0d54c158/maintainability">
   </a>
   <a href="https://github.com/semantic-release/semantic-release">
@@ -24,11 +24,11 @@
 ## Usage
 
 ```
-npm install @stratiformdigital/npm-accelerator
+npm install @stratiformdigital/sechub-github-sync
 
 ...
 
-import "@stratiformdigital/npm-accelerator";
+import "@stratiformdigital/sechub-github-sync";
 
 ...
 ```
