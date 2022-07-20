@@ -1,6 +1,6 @@
 {
   "name": "@stratiformdigital/security-hub-sync",
-  "version": "1.0.2",
+  "version": "0.0.0-managed-by-semantic-release",
   "type": "module",
   "description": "A really awesome description of this package.",
   "main": "index.js",
@@ -24,8 +24,7 @@
         "@semantic-release/git",
         {
           "assets": [
-            "CHANGELOG.md",
-            "package.json"
+            "CHANGELOG.md"
           ],
           "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
         }
