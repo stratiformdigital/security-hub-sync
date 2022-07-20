@@ -5,7 +5,7 @@ const findingIdRegex = /(?<=\nFinding Id: ).*/g;
 
 export class SechubGithubSync {
   constructor(options) {
-    this.severity = options.severity || ["MEDIUM", "HIGH", "CRITICAL"];
+    this.severity = options.severity || ["HIGH", "CRITICAL"];
     this.octokitRepoParams = {
       owner: options.repository.split("/")[0],
       repo: options.repository.split("/")[1],
