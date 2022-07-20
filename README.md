@@ -1,5 +1,5 @@
 <h1 align="center" style="border-bottom: none;">sechub-github-sync</h1>
-<h3 align="center">A really awesome description of this package.</h3>
+<h3 align="center">A utility to sync Security Hub Findings to GitHub Issues.</h3>
 <p align="center">
   <a href="https://github.com/stratiformdigital/sechub-github-sync/releases/latest">
     <img alt="latest release" src="https://img.shields.io/github/release/stratiformdigital/sechub-github-sync.svg">
