@@ -1,6 +1,6 @@
 {
   "name": "@stratiformdigital/security-hub-sync",
-  "version": "0.0.0-managed-by-semantic-release",
+  "version": "1.0.2",
   "type": "module",
   "description": "A really awesome description of this package.",
   "main": "index.js",

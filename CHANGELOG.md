@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/stratiformdigital/security-hub-sync/compare/v1.0.1...v1.0.2) (2022-07-20)
+
+
+### Bug Fixes
+
+* **test:** testing if the package.json managed version shows up in npm correctly or if its always one behind ([f1c047f](https://github.com/stratiformdigital/security-hub-sync/commit/f1c047f8250501385055977697157c851215c352))
+
 ## [1.0.1](https://github.com/stratiformdigital/security-hub-sync/compare/v1.0.0...v1.0.1) (2022-07-20)
 
 
