@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/stratiformdigital/security-hub-sync/compare/v1.0.2...v1.0.3) (2022-07-20)
+
+
+### Bug Fixes
+
+* **version again:**  Do not update package.json with version.  Unneeded ([d3d90f6](https://github.com/stratiformdigital/security-hub-sync/commit/d3d90f63cceaa5a40b78018ba404794c982e2471))
+
 ## [1.0.2](https://github.com/stratiformdigital/security-hub-sync/compare/v1.0.1...v1.0.2) (2022-07-20)
 
 
