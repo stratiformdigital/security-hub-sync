@@ -1,13 +1,13 @@
-<h1 align="center" style="border-bottom: none;">sechub-github-sync</h1>
+<h1 align="center" style="border-bottom: none;">security-hub-sync</h1>
 <h3 align="center">A utility to sync Security Hub Findings to GitHub Issues.</h3>
 <p align="center">
-  <a href="https://github.com/stratiformdigital/sechub-github-sync/releases/latest">
-    <img alt="latest release" src="https://img.shields.io/github/release/stratiformdigital/sechub-github-sync.svg">
+  <a href="https://github.com/stratiformdigital/security-hub-sync/releases/latest">
+    <img alt="latest release" src="https://img.shields.io/github/release/stratiformdigital/security-hub-sync.svg">
   </a>
-  <a href="https://www.npmjs.com/package/@stratiformdigital/sechub-github-sync">
-    <img alt="npm latest version" src="https://img.shields.io/npm/v/@stratiformdigital/sechub-github-sync/latest.svg">
+  <a href="https://www.npmjs.com/package/@stratiformdigital/security-hub-sync">
+    <img alt="npm latest version" src="https://img.shields.io/npm/v/@stratiformdigital/security-hub-sync/latest.svg">
   </a>
-  <a href="https://codeclimate.com/github/stratiformdigital/sechub-github-sync/maintainability">
+  <a href="https://codeclimate.com/github/stratiformdigital/security-hub-sync/maintainability">
     <img alt="Maintainability" src="https://api.codeclimate.com/v1/badges/ed37d65c137b0d54c158/maintainability">
   </a>
   <a href="https://github.com/semantic-release/semantic-release">
@@ -24,11 +24,11 @@
 ## Usage
 
 ```
-npm install @stratiformdigital/sechub-github-sync
+npm install @stratiformdigital/security-hub-sync
 
 ...
 
-import "@stratiformdigital/sechub-github-sync";
+import "@stratiformdigital/security-hub-sync";
 
 ...
 ```
