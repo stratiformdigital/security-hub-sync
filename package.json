@@ -1,6 +1,7 @@
 {
   "name": "@stratiformdigital/sechub-github-sync",
   "version": "1.0.0",
+  "type": "module",
   "description": "A really awesome description of this package.",
   "main": "index.js",
   "scripts": {

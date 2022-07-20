@@ -1,101 +1,102 @@
-
-// Our data source is Security Hub Findings.  Auth is provided via the lambda's IAM role.
 import AWS from "aws-sdk";
-const securityhub = new AWS.SecurityHub();
-
-// The GitHub org/owner and repo for which we're modifying issues
-const org = process.env.githubRepository.split("/")[0];
-const repo = process.env.githubRepository.split("/")[1];
-
-// The stage variable maps to an environment, and will be used in the issue title.
-const stage = process.env.stage;
-
-// Octokit is the offical client(s) for the GitHub API.
 import { Octokit } from "octokit";
-// We auth to the GitHub API via a personal access token.
-const octokit = new Octokit({ auth: process.env.githubAccessToken });
-// Org/owner and repo params used in Octokit requests.
-const octokitRepoParams = {
-  owner: org,
-  repo: repo,
-};
-
-// We will use lodash to do some filtering/searching.
-const _ = require("lodash");
-
-// Regex used to search a GitHub Issue's body to find the Id of its underlying Security Hub Finding.
+import _ from "lodash";
 const findingIdRegex = /(?<=\nFinding Id: ).*/g;
 
-async function getAllActiveFindings() {
-  const EMPTY = Symbol("empty");
-  const res = [];
-  let severityLabels = [];
-  process.env.severity.split(",").forEach(function (label) {
-    severityLabels.push({
-      Comparison: "EQUALS",
-      Value: label,
+export class SechubGithubSync {
+  constructor(options) {
+    this.severity = options.severity || ["MEDIUM", "HIGH", "CRITICAL"];
+    this.octokitRepoParams = {
+      owner: options.repository.split("/")[0],
+      repo: options.repository.split("/")[1],
+    };
+    this.octokit = new Octokit({ auth: options.auth });
+    this.region = options.region;
+    this.accountNickname = options.accountNickname || null;
+  }
+
+  async sync() {
+    const findings = await this.getAllActiveFindings();
+    var issues = await this.getAllIssues();
+    await this.closeIssuesWithoutAnActiveFinding(findings, issues);
+    await this.createOrUpdateIssuesBasedOnFindings(findings, issues);
+  }
+
+  async getAllActiveFindings() {
+    const EMPTY = Symbol("empty");
+    const res = [];
+    let severityLabels = [];
+    this.severity.forEach(function (label) {
+      severityLabels.push({
+        Comparison: "EQUALS",
+        Value: label,
+      });
     });
-  });
-
-  // prettier-ignore
-  for await (const lf of (async function * () {
-    let NextToken = EMPTY;
-    while (NextToken || NextToken === EMPTY) {
-      const functions = await securityhub
-        .getFindings({
-          Filters: {
-            RecordState: [
-              {
-                Comparison: "EQUALS",
-                Value: "ACTIVE",
-              },
-            ],
-            WorkflowStatus: [
-              {
-                Comparison: "EQUALS",
-                Value: "NEW",
-              },
-              {
-                Comparison: "EQUALS",
-                Value: "NOTIFIED",
-              },
-            ],
-            SeverityLabel: severityLabels,
-          },
-          MaxResults: 100,
-          NextToken: NextToken !== EMPTY ? NextToken : undefined,
-        })
-        .promise();
-      yield* functions.Findings;
-      NextToken = functions.NextToken;
+    const securityhub = new AWS.SecurityHub({ region: this.region });
+    // prettier-ignore
+    for await (const lf of (async function * () {
+      let NextToken = EMPTY;
+      while (NextToken || NextToken === EMPTY) {
+        const functions = await securityhub
+          .getFindings({
+            Filters: {
+              RecordState: [
+                {
+                  Comparison: "EQUALS",
+                  Value: "ACTIVE",
+                },
+              ],
+              WorkflowStatus: [
+                {
+                  Comparison: "EQUALS",
+                  Value: "NEW",
+                },
+                {
+                  Comparison: "EQUALS",
+                  Value: "NOTIFIED",
+                },
+              ],
+              SeverityLabel: severityLabels,
+            },
+            MaxResults: 100,
+            NextToken: NextToken !== EMPTY ? NextToken : undefined,
+          })
+          .promise();
+        yield* functions.Findings;
+        NextToken = functions.NextToken;
+      }
+    })()) {
+      res.push(lf);
     }
-  })()) {
-    res.push(lf);
+    return res;
   }
-  return res;
-}
 
-async function getAllIssues() {
-  let issues = [];
-  for await (const response of octokit.paginate.iterator(
-    octokit.rest.issues.listForRepo,
-    {
-      ...octokitRepoParams,
-      state: "all",
-      labels: ["security-hub", stage],
+  async getAllIssues() {
+    let issues = [];
+    for await (const response of this.octokit.paginate.iterator(
+      this.octokit.rest.issues.listForRepo,
+      {
+        ...this.octokitRepoParams,
+        state: "all",
+        labels: ["security-hub", this.region],
+      }
+    )) {
+      issues.push(...response.data);
     }
-  )) {
-    issues.push(...response.data);
+    return issues;
   }
-  return issues;
-}
 
-function issueParamsForFinding(finding) {
-  return {
-    title: `SHF - ${repo} - ${stage} - ${finding.Severity.Label} - ${finding.Title}`,
-    state: "open",
-    labels: ["security-hub", stage],
-    body: `**************************************************************
+  issueParamsForFinding(finding) {
+    return {
+      title: `SecurityHub Finding - ${finding.Title}`,
+      state: "open",
+      labels: [
+        "security-hub",
+        this.region,
+        finding.Severity.Label,
+        this.accountNickname || finding.AwsAccountId,
+      ],
+      body: `**************************************************************
 __This issue was generated from Security Hub data and is managed through automation.__
 Please do not edit the title or body of this issue, or remove the security-hub tag.  All other edits/comments are welcome.
 Finding Id: ${finding.Id}
@@ -126,108 +127,100 @@ ${finding.ProductFields.RecommendationUrl}
 ## AC:
 
 - The security hub finding is resolved or suppressed, indicated by a Workflow Status of Resolved or Suppressed.
-    `,
-  };
-}
-
-async function createNewGitHubIssue(finding) {
-  await octokit.rest.issues.create({
-    ...octokitRepoParams,
-    ...issueParamsForFinding(finding),
-  });
-  // Due to github secondary rate limiting, we will take a 5s pause after creating issues.
-  // See:  https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
-  await new Promise((resolve) => setTimeout(resolve, 5000));
-}
-
-async function updateIssueIfItsDrifted(finding, issue) {
-  let issueParams = issueParamsForFinding(finding);
-  let issueLabels = [];
-  issue.labels.forEach(function (label) {
-    issueLabels.push(label.name);
-  });
-  if (
-    issue.title != issueParams.title ||
-    issue.state != issueParams.state ||
-    issue.body != issueParams.body ||
-    !issueParams.labels.every((v) => issueLabels.includes(v))
-  ) {
-    console.log(`Issue ${issue.number}:  drift detected.  Updating issue...`);
-    await octokit.rest.issues.update({
-      ...octokitRepoParams,
-      ...issueParams,
-      issue_number: issue.number,
-    });
-  } else {
-    console.log(
-      `Issue ${issue.number}:  Issue is up to date.  Doing nothing...`
-    );
+      `,
+    };
   }
-}
 
-async function closeIssuesWithoutAnActiveFinding(findings, issues) {
-  console.log(
-    `******** Discovering and closing any open GitHub Issues without an underlying, active Security Hub finding. ********`
-  );
+  async createNewGitHubIssue(finding) {
+    await this.octokit.rest.issues.create({
+      ...this.octokitRepoParams,
+      ...this.issueParamsForFinding(finding),
+    });
+    // Due to github secondary rate limiting, we will take a 5s pause after creating issues.
+    // See:  https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+  }
 
-  // Store all finding ids in an array
-  var findingsIds = _.map(findings, "Id");
-  // Search for open issues that do not have a corresponding active SH finding.
-  for (let i = 0; i < issues.length; i++) {
-    let issue = issues[i];
-    if (issue.state != "open") continue; // We only care about open issues here.
-    let issueId = issue.body.match(findingIdRegex);
-    if (issueId && findingsIds.includes(issueId[0])) {
-      console.log(
-        `Issue ${issue.number}:  Underlying finding found.  Doing nothing...`
-      );
+  async updateIssueIfItsDrifted(finding, issue) {
+    let issueParams = this.issueParamsForFinding(finding);
+    let issueLabels = [];
+    issue.labels.forEach(function (label) {
+      issueLabels.push(label.name);
+    });
+    if (
+      issue.title != issueParams.title ||
+      issue.state != issueParams.state ||
+      issue.body != issueParams.body ||
+      !issueParams.labels.every((v) => issueLabels.includes(v))
+    ) {
+      console.log(`Issue ${issue.number}:  drift detected.  Updating issue...`);
+      await this.octokit.rest.issues.update({
+        ...this.octokitRepoParams,
+        ...issueParams,
+        issue_number: issue.number,
+      });
     } else {
       console.log(
-        `Issue ${issue.number}:  No underlying finding found.  Closing issue...`
+        `Issue ${issue.number}:  Issue is up to date.  Doing nothing...`
       );
-      await octokit.rest.issues.update({
-        ...octokitRepoParams,
-        issue_number: issue.number,
-        state: "closed",
-      });
     }
   }
-}
 
-async function createOrUpdateIssuesBasedOnFindings(findings, issues) {
-  console.log(
-    `******** Creating or updating GitHub Issues based on Security Hub findings. ********`
-  );
-  // Search for active SH findings that don't have an open issue
-  for (let i = 0; i < findings.length; i++) {
-    var finding = findings[i];
-    let hit = false;
-    for (let j = 0; j < issues.length; j++) {
-      var issue = issues[j];
+  async closeIssuesWithoutAnActiveFinding(findings, issues) {
+    console.log(
+      `******** Discovering and closing any open GitHub Issues without an underlying, active Security Hub finding. ********`
+    );
+
+    // Store all finding ids in an array
+    var findingsIds = _.map(findings, "Id");
+    // Search for open issues that do not have a corresponding active SH finding.
+    for (let i = 0; i < issues.length; i++) {
+      let issue = issues[i];
+      if (issue.state != "open") continue; // We only care about open issues here.
       let issueId = issue.body.match(findingIdRegex);
-      if (finding.Id == issueId) {
-        hit = true;
+      if (issueId && findingsIds.includes(issueId[0])) {
         console.log(
-          `Finding ${finding.Id}:  Issue ${issue.number} found for finding.  Checking it's up to date...`
+          `Issue ${issue.number}:  Underlying finding found.  Doing nothing...`
         );
-        await updateIssueIfItsDrifted(finding, issue);
-        break;
+      } else {
+        console.log(
+          `Issue ${issue.number}:  No underlying finding found.  Closing issue...`
+        );
+        await this.octokit.rest.issues.update({
+          ...this.octokitRepoParams,
+          issue_number: issue.number,
+          state: "closed",
+        });
       }
     }
-    if (!hit) {
-      console.log(
-        `Finding ${finding.Id}:  No issue found for finding.  Creating issue...`
-      );
-      await createNewGitHubIssue(finding);
+  }
+
+  async createOrUpdateIssuesBasedOnFindings(findings, issues) {
+    console.log(
+      `******** Creating or updating GitHub Issues based on Security Hub findings. ********`
+    );
+    // Search for active SH findings that don't have an open issue
+    for (let i = 0; i < findings.length; i++) {
+      var finding = findings[i];
+      let hit = false;
+      for (let j = 0; j < issues.length; j++) {
+        var issue = issues[j];
+        let issueId = issue.body.match(findingIdRegex);
+        if (finding.Id == issueId) {
+          hit = true;
+          console.log(
+            `Finding ${finding.Id}:  Issue ${issue.number} found for finding.  Checking it's up to date...`
+          );
+          await this.updateIssueIfItsDrifted(finding, issue);
+          break;
+        }
+      }
+      if (!hit) {
+        console.log(
+          `Finding ${finding.Id}:  No issue found for finding.  Creating issue...`
+        );
+        await this.createNewGitHubIssue(finding);
+      }
     }
   }
 }
-
-async function sync(event) {
-  const findings = await getAllActiveFindings();
-  var issues = await getAllIssues();
-  await closeIssuesWithoutAnActiveFinding(findings, issues);
-  await createOrUpdateIssuesBasedOnFindings(findings, issues);
-}
-
-module.exports.sync = sync;
