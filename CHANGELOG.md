@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/stratiformdigital/security-hub-sync/compare/v1.0.3...v1.0.4) (2022-07-20)
+
+
+### Bug Fixes
+
+* **default severity:** update default severity to be high and critical ([0417dc6](https://github.com/stratiformdigital/security-hub-sync/commit/0417dc6815fae56d184f60802fc91adc9dfc583c))
+
 ## [1.0.3](https://github.com/stratiformdigital/security-hub-sync/compare/v1.0.2...v1.0.3) (2022-07-20)
 
 
