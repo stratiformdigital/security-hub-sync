@@ -1,3 +1,15 @@
+# [2.0.0](https://github.com/stratiformdigital/security-hub-sync/compare/v1.0.4...v2.0.0) (2022-10-14)
+
+
+### Features
+
+* **one issue per rule:**  Add testing, move to sdk v3, and make one issue per rule violated ([#101](https://github.com/stratiformdigital/security-hub-sync/issues/101)) ([6422504](https://github.com/stratiformdigital/security-hub-sync/commit/6422504338706c25d20fe2d9c971f89daa1ebd82))
+
+
+### BREAKING CHANGES
+
+* **one issue per rule:** logic shift and SDK upgrade.
+
 ## [1.0.4](https://github.com/stratiformdigital/security-hub-sync/compare/v1.0.3...v1.0.4) (2022-07-20)
 
 
