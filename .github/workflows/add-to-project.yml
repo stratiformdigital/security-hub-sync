@@ -17,3 +17,5 @@ jobs:
         with:
           project-url: https://github.com/orgs/stratiformdigital/projects/4
           github-token: ${{ secrets.PAT_PUBLIC }}
+          labeled: security-hub
+          label-operator: NOT

@@ -1,7 +1,10 @@
-import AWS from "aws-sdk";
+import {
+  SecurityHubClient,
+  GetFindingsCommand,
+} from "@aws-sdk/client-securityhub";
 import { Octokit } from "octokit";
 import _ from "lodash";
-const findingIdRegex = /(?<=\nFinding Id: ).*/g;
+const findingTitleRegex = /(?<=\nFinding Title: ).*/g;
 
 export class SechubGithubSync {
   constructor(options) {
@@ -11,13 +14,13 @@ export class SechubGithubSync {
       repo: options.repository.split("/")[1],
     };
     this.octokit = new Octokit({ auth: options.auth });
-    this.region = options.region;
+    this.region = options.region || "us-east-1";
     this.accountNickname = options.accountNickname || null;
   }
 
   async sync() {
     const findings = await this.getAllActiveFindings();
-    var issues = await this.getAllIssues();
+    const issues = await this.getAllIssues();
     await this.closeIssuesWithoutAnActiveFinding(findings, issues);
     await this.createOrUpdateIssuesBasedOnFindings(findings, issues);
   }
@@ -32,13 +35,12 @@ export class SechubGithubSync {
         Value: label,
       });
     });
-    const securityhub = new AWS.SecurityHub({ region: this.region });
-    // prettier-ignore
-    for await (const lf of (async function * () {
+    const client = new SecurityHubClient({ region: this.region });
+    for await (const lf of (async function* () {
       let NextToken = EMPTY;
       while (NextToken || NextToken === EMPTY) {
-        const functions = await securityhub
-          .getFindings({
+        const functions = await client.send(
+          new GetFindingsCommand({
             Filters: {
               RecordState: [
                 {
@@ -61,14 +63,24 @@ export class SechubGithubSync {
             MaxResults: 100,
             NextToken: NextToken !== EMPTY ? NextToken : undefined,
           })
-          .promise();
+        );
         yield* functions.Findings;
         NextToken = functions.NextToken;
       }
     })()) {
       res.push(lf);
     }
-    return res;
+    var formattedFindings = _.map(res, function (finding) {
+      return {
+        Title: finding.Title,
+        Description: finding.Description,
+        Severity: finding.Severity.Label,
+        Region: finding.Region,
+        Recommendation: finding.Remediation.Recommendation,
+      };
+    });
+    var uniqueFindings = _.uniqBy(formattedFindings, "Title");
+    return uniqueFindings;
   }
 
   async getAllIssues() {
@@ -93,13 +105,13 @@ export class SechubGithubSync {
       labels: [
         "security-hub",
         this.region,
-        finding.Severity.Label,
-        this.accountNickname || finding.AwsAccountId,
+        finding.Severity,
+        this.accountNickname,
       ],
       body: `**************************************************************
 __This issue was generated from Security Hub data and is managed through automation.__
 Please do not edit the title or body of this issue, or remove the security-hub tag.  All other edits/comments are welcome.
-Finding Id: ${finding.Id}
+Finding Title: ${finding.Title}
 **************************************************************
 
 
@@ -111,22 +123,18 @@ Finding Id: ${finding.Id}
 
 ${finding.Title}
 
-## Id:
-
-${finding.Id}
-(You may use this ID to lookup this finding's details in Security Hub)
-
 ## Description
 
 ${finding.Description}
 
 ## Remediation
 
-${finding.ProductFields.RecommendationUrl}
+${finding.Recommendation.Url}
+${finding.Recommendation.Text}
 
 ## AC:
 
-- The security hub finding is resolved or suppressed, indicated by a Workflow Status of Resolved or Suppressed.
+- All findings of this type are resolved or suppressed, indicated by a Workflow Status of Resolved or Suppressed.  (Note:  this ticket will automatically close when the AC is met.)
       `,
     };
   }
@@ -172,13 +180,13 @@ ${finding.ProductFields.RecommendationUrl}
     );
 
     // Store all finding ids in an array
-    var findingsIds = _.map(findings, "Id");
+    var findingsTitles = _.map(findings, "Title");
     // Search for open issues that do not have a corresponding active SH finding.
     for (let i = 0; i < issues.length; i++) {
       let issue = issues[i];
       if (issue.state != "open") continue; // We only care about open issues here.
-      let issueId = issue.body.match(findingIdRegex);
-      if (issueId && findingsIds.includes(issueId[0])) {
+      let issueTitle = issue.body.match(findingTitleRegex);
+      if (issueTitle && findingsTitles.includes(issueTitle[0])) {
         console.log(
           `Issue ${issue.number}:  Underlying finding found.  Doing nothing...`
         );
@@ -205,11 +213,11 @@ ${finding.ProductFields.RecommendationUrl}
       let hit = false;
       for (let j = 0; j < issues.length; j++) {
         var issue = issues[j];
-        let issueId = issue.body.match(findingIdRegex);
-        if (finding.Id == issueId) {
+        let issueTitle = issue.body.match(findingTitleRegex);
+        if (finding.Title == issueTitle) {
           hit = true;
           console.log(
-            `Finding ${finding.Id}:  Issue ${issue.number} found for finding.  Checking it's up to date...`
+            `Finding ${finding.Title}:  Issue ${issue.number} found for finding.  Checking it's up to date...`
           );
           await this.updateIssueIfItsDrifted(finding, issue);
           break;
@@ -217,7 +225,7 @@ ${finding.ProductFields.RecommendationUrl}
       }
       if (!hit) {
         console.log(
-          `Finding ${finding.Id}:  No issue found for finding.  Creating issue...`
+          `Finding ${finding.Title}:  No issue found for finding.  Creating issue...`
         );
         await this.createNewGitHubIssue(finding);
       }
