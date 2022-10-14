@@ -6,7 +6,7 @@ on:
       - main
 
 concurrency:
-  group: ${{ github.ref }}-release
+  group: ${{ github.ref_name }}-release
 
 jobs:
   Release:
