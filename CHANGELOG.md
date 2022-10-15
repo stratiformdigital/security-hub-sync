@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/stratiformdigital/security-hub-sync/compare/v2.0.0...v2.0.1) (2022-10-15)
+
+
+### Bug Fixes
+
+* **accountNickname:**  set default accountnickname ([#132](https://github.com/stratiformdigital/security-hub-sync/issues/132)) ([b6fb023](https://github.com/stratiformdigital/security-hub-sync/commit/b6fb023ef28846a1a36936e74239eacdbcb12403))
+
 # [2.0.0](https://github.com/stratiformdigital/security-hub-sync/compare/v1.0.4...v2.0.0) (2022-10-14)
 
 
