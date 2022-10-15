@@ -2,6 +2,7 @@ import {
   SecurityHubClient,
   GetFindingsCommand,
 } from "@aws-sdk/client-securityhub";
+import { STSClient, GetCallerIdentityCommand } from "@aws-sdk/client-sts";
 import { Octokit } from "octokit";
 import _ from "lodash";
 const findingTitleRegex = /(?<=\nFinding Title: ).*/g;
@@ -19,6 +20,12 @@ export class SechubGithubSync {
   }
 
   async sync() {
+    if (!this.accountNickname) {
+      const stsClient = new STSClient({ region: this.region });
+      this.accountNickname = (
+        await stsClient.send(new GetCallerIdentityCommand())
+      ).Account;
+    }
     const findings = await this.getAllActiveFindings();
     const issues = await this.getAllIssues();
     await this.closeIssuesWithoutAnActiveFinding(findings, issues);
@@ -90,7 +97,7 @@ export class SechubGithubSync {
       {
         ...this.octokitRepoParams,
         state: "all",
-        labels: ["security-hub", this.region],
+        labels: ["security-hub", this.region, this.accountNickname],
       }
     )) {
       issues.push(...response.data);
