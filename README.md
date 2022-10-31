@@ -32,7 +32,7 @@ import { SechubGithubSync } from "@stratiformdigital/security-hub-sync";
 ...
 
 var mySync = new SechubGithubSync({
-    repository: myorgname/myrepositoryname, // (required) The name of the repository in which to create Issues.  If GH Actions, use process.env.GITHUB_REPOSITORY
+    repository: "myorgname/myrepositoryname", // (required) The name of the repository in which to create Issues.  If GH Actions, use process.env.GITHUB_REPOSITORY
     auth: process.env.GITHUB_TOKEN, // (required)  A PAT with access to create issues.  If GH Actions, use process.env.GITHUB_TOKEN
     accountNickname: "dev", // (required) A sensible account nickname; will be used to label issues.
     region: "us-east-1", // (optional, default: us-east-1) The SecHub region at which to look.
