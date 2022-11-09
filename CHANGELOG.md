@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/stratiformdigital/security-hub-sync/compare/v2.0.1...v2.0.2) (2022-11-09)
+
+
+### Bug Fixes
+
+* **bug recommendation:** Tolerate an undefined recommendation field ([67aaa0e](https://github.com/stratiformdigital/security-hub-sync/commit/67aaa0e634085c37a6254b31bb9429d90b02d4e7))
+
 ## [2.0.1](https://github.com/stratiformdigital/security-hub-sync/compare/v2.0.0...v2.0.1) (2022-10-15)
 
 
