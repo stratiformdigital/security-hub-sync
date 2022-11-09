@@ -83,7 +83,13 @@ export class SechubGithubSync {
         Description: finding.Description,
         Severity: finding.Severity.Label,
         Region: finding.Region,
-        Recommendation: finding.Remediation.Recommendation,
+        Recommendation:
+          finding.Remediation && finding.Remediation.Recommendation
+            ? finding.Remediation.Recommendation
+            : {
+                Url: "No Recommendation URL provided.",
+                Text: "No Recommendation Text provided.",
+              },
       };
     });
     var uniqueFindings = _.uniqBy(formattedFindings, "Title");
