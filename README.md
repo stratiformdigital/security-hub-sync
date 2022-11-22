@@ -38,7 +38,7 @@ var mySync = new SechubGithubSync({
     region: "us-east-1", // (optional, default: us-east-1) The SecHub region at which to look.
     severity: ["CRITICAL","HIGH"], // (optional, default: ['CRITICAL','HIGH']) The finding types for which you want to create issues.
   });
-  await sync.sync();
+  await mySync.sync();
 ```
 
 ## Information
