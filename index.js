@@ -65,6 +65,12 @@ export class SechubGithubSync {
                   Value: "NOTIFIED",
                 },
               ],
+              ProductName: [
+                {
+                  Comparison: "NOT_EQUALS",
+                  Value: "Health"
+                }
+              ],
               SeverityLabel: severityLabels,
             },
             MaxResults: 100,
