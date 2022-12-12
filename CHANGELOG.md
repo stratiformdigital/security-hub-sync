@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/stratiformdigital/security-hub-sync/compare/v2.0.2...v2.1.0) (2022-12-12)
+
+
+### Features
+
+* **sync only security hub:**  Only sync findings from "Security Hub" product ([#409](https://github.com/stratiformdigital/security-hub-sync/issues/409)) ([57600be](https://github.com/stratiformdigital/security-hub-sync/commit/57600bec86a307bc2c77b91707fd27496731458c))
+
 ## [2.0.2](https://github.com/stratiformdigital/security-hub-sync/compare/v2.0.1...v2.0.2) (2022-11-09)
 
 
