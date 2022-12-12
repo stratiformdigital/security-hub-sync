@@ -68,8 +68,8 @@ export class SechubGithubSync {
               ProductName: [
                 {
                   Comparison: "EQUALS",
-                  Value: "Security Hub"
-                }
+                  Value: "Security Hub",
+                },
               ],
               SeverityLabel: severityLabels,
             },
