@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/stratiformdigital/security-hub-sync/compare/v2.1.0...v2.1.1) (2023-01-10)
+
+
+### Bug Fixes
+
+* **deps security:** release new version with updated dependencies ([692227e](https://github.com/stratiformdigital/security-hub-sync/commit/692227e44809c3ce5eec8de96b066f8fca9d6d62))
+
 # [2.1.0](https://github.com/stratiformdigital/security-hub-sync/compare/v2.0.2...v2.1.0) (2022-12-12)
 
 
